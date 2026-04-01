@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Terminator Athletics Pro</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --card-bg: #121212;
+            --accent: #00ff88;
+            --text: #ffffff;
+            --gray: #666;
+            --danger: #ff4444;
+            --blue: #2563eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        .navbar {
+            width: 100%;
+            background: #000;
+            padding: 2.5rem 0;
+            border-bottom: 1px solid #222;
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .container {
+            max-width: 950px;
+            width: 95%;
+            margin: 1rem 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid #222;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 3rem;
+        }
+
+        h2 { color: var(--accent); margin-top: 0; text-align: center; text-transform: uppercase; font-size: 1.2rem; margin-bottom: 25px; }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+        }
+
+        .mode-btn {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .mode-btn:hover { border-color: var(--accent); background: #222; }
+        .mode-btn h3 { margin: 0 0 5px 0; color: var(--accent); font-size: 1rem; }
+        .mode-btn p { margin: 0; font-size: 0.75rem; color: #888; }
+
+        .input-group { display: flex; gap: 15px; margin-bottom: 30px; }
+
+        input, select {
+            flex: 1;
+            padding: 18px;
+            background: #000;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .btn {
+            cursor: pointer;
+            border: none;
+            padding: 18px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-add { background: var(--accent); color: black; min-width: 130px; }
+        .btn-delete { background: rgba(255, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); font-size: 0.75rem; padding: 8px 12px; }
+        .btn-start { background: var(--accent); color: black; width: 100%; font-size: 1.8rem; padding: 25px; }
+        .btn-finish-runner { background: var(--blue); color: white; width: 100%; padding: 15px; font-weight: bold; }
+        .btn-next { background: #333; color: white; width: 100%; margin-top: 25px; padding: 20px; }
+        .btn-export { background: #444; color: white; margin-top: 20px; font-size: 0.85rem; width: 100%; }
+
+        #timer-big {
+            font-family: 'Courier New', monospace;
+            font-size: 5rem;
+            text-align: center;
+            color: var(--accent);
+            margin: 30px 0;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th { text-align: left; color: var(--gray); font-size: 0.85rem; padding: 18px; border-bottom: 2px solid #222; }
+        td { padding: 18px; border-bottom: 1px solid #1a1a1a; }
+
+        .res-time { font-family: monospace; font-weight: bold; color: var(--accent); font-size: 1.1rem; }
+
+        .hidden { display: none !important; }
+        .status-msg { text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; height: 1.8rem; }
+        .winner { background: rgba(0, 255, 136, 0.1); color: var(--accent); }
+
+        /* MOBILNÍ VERZE (Media Query) */
+        @media (max-width: 600px) {
+            .navbar { padding: 1.5rem 0; margin-bottom: 1rem; }
+            .logo { font-size: 1.2rem; }
+            .card { padding: 1.5rem; border-radius: 15px; margin-bottom: 1.5rem; }
+            #timer-big { font-size: 12vw; margin: 15px 0; }
+            .input-group { flex-direction: column; gap: 10px; }
+            .btn-add { min-width: 100%; }
+            .btn-start { font-size: 1.4rem; padding: 20px; }
+            h2 { font-size: 1rem; margin-bottom: 15px; }
+            input, select { padding: 15px; font-size: 16px; } /* 16px brání zoomu na iPhone */
+            
+            /* Úprava technických disciplín pro mobil */
+            .tech-entry { flex-direction: column !important; align-items: flex-start !important; }
+            .attempts-row { width: 100%; justify-content: space-between; margin-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">TERMINATOR ATHLETICS ⚡ PRO</div>
+    </nav>
+
+    <div class="container">
+        <div id="mode-selection" class="card">
+            <h2>Vyberte typ měření</h2>
+            <div class="mode-selector">
+                <div class="mode-btn" onclick="selectMode('single')">
+                    <h3>🏃 Jednotlivci</h3>
+                    <p>Postupné sprinty 1 po 1</p>
+                </div>
+                <div class="mode-btn" onclick="selectMode('multi')">
+                    <h3>🏁 Rozběhy</h3>
+                    <p>Hromadný start (více drah)</p>
+                </div>
+                <div class="mode-btn" onclick="selectMode('tech')">
+                    <h3>☄️ Technické</h3>
+                    <p>Hody, vrhy a skoky</p>
+                </div>
+                <div class="mode-btn" onclick="selectMode('endurance')">
+                    <h3>🔋 Vytrvalost</h3>
+                    <p>Všichni naráz (např. 1000m)</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="step-registration" class="card hidden">
+            <h2 id="reg-title">Příprava soupisky</h2>
+            <div id="config-area" style="margin-bottom: 30px;"></div>
+
+            <div class="input-group">
+                <input type="text" id="student-name" placeholder="Jméno a Příjmení žáka" onkeypress="if(event.key === 'Enter') addStudent()">
+                <button class="btn btn-add" onclick="addStudent()">PŘIDAT</button>
+            </div>
+            
+            <table>
+                <thead><tr><th>Jméno žáka</th><th style="text-align:right">Akce</th></tr></thead>
+                <tbody id="student-list-init"></tbody>
+            </table>
+            
+            <button id="finish-btn" class="btn btn-next hidden" style="background: white; color: black;" onclick="proceedToAction()">POTVRDIT A PŘEJÍT K MĚŘENÍ</button>
+        </div>
+
+        <div id="step-multi-overview" class="card hidden">
+            <h2>Rozlosované skupiny</h2>
+            <div id="heats-list-overview" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:15px;"></div>
+            <button class="btn btn-start" style="margin-top:25px" onclick="startActualMultiRace()">VŠE PŘIPRAVENO!</button>
+        </div>
+
+        <div id="step-race-ui" class="card hidden">
+            <h2 id="race-display-title">Měření</h2>
+            <div id="status-race" class="status-msg" style="color: #aaa;">PŘIPRAVIT...</div>
+            <div id="timer-big">00:00.000</div>
+            
+            <div id="start-area" style="text-align:center;">
+                <button id="btn-master-start" class="btn btn-start" onclick="startGlobalSequence()">START</button>
+            </div>
+            
+            <div id="runners-active-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-top:20px;"></div>
+            <button id="btn-next-step" class="btn btn-next hidden" onclick="nextPhase()">DALŠÍ KROK</button>
+        </div>
+
+        <div id="step-tech-measure" class="card hidden">
+            <h2 id="tech-display-title">Disciplína</h2>
+            <div id="tech-input-list" style="display: grid; gap: 15px;"></div>
+            <button class="btn btn-start" style="margin-top:30px" onclick="calculateTechResults()">VYHODNOTIT VÝSLEDKY</button>
+        </div>
+
+        <div id="step-results" class="card hidden">
+            <h2>🏆 KONEČNÉ VÝSLEDKY</h2>
+            <table>
+                <thead><tr><th>#</th><th>Jméno</th><th id="result-unit-header">Výkon</th></tr></thead>
+                <tbody id="results-list"></tbody>
+            </table>
+            <button class="btn btn-export" onclick="exportToCSV()">⬇️ STÁHNOUT EXCEL (.CSV)</button>
+            <button class="btn btn-start" style="margin-top:30px" onclick="location.reload()">NOVÝ ZÁVOD</button>
+        </div>
+    </div>
+
+    <audio id="start-sound" src="https://image2url.com/r2/default/audio/1775055627494-a1578d7f-1a4e-4b19-9c7b-164a34a90c89.mp3"></audio>
+
+    <script>
+        let mode='', students=[], heats=[], results=[], currentIndex=0, startTime, timerInterval, techAttemptsCount=3, finishedCount=0;
+        const sound = document.getElementById('start-sound');
+
+        function selectMode(m) {
+            mode = m;
+            document.getElementById('mode-selection').classList.add('hidden');
+            document.getElementById('step-registration').classList.remove('hidden');
+            const cfg = document.getElementById('config-area');
+            if(mode==='multi') cfg.innerHTML = `<label>Počet drah: </label><select id="team-size"><option value="2">2</option><option value="4" selected>4</option><option value="6">6</option></select>`;
+            else if(mode==='tech') {
+                cfg.innerHTML = `
+                    <label>Disciplína: </label>
+                    <select id="tech-type" style="margin-right:10px; margin-bottom:10px;">
+                        <option value="Vrh koulí">Vrh koulí</option>
+                        <option value="Skok do výšky">Skok do výšky</option>
+                        <option value="Skok do dálky">Skok do dálky</option>
+                        <option value="Hod oštěpem">Hod oštěpem</option>
+                        <option value="Hod krikeťákem">Hod krikeťákem</option>
+                    </select>
+                    <label>Pokusy: </label>
+                    <select id="tech-attempts">
+                        <option value="1">1</option>
+                        <option value="3" selected>3</option>
+                        <option value="6">6</option>
+                    </select>`;
+            }
+            else cfg.innerHTML = '';
+        }
+
+        function addStudent() {
+            const inp = document.getElementById('student-name');
+            if(inp.value.trim()){ students.push(inp.value.trim()); inp.value=''; renderInitTable(); }
+        }
+
+        function renderInitTable() {
+            students.sort((a,b)=>a.localeCompare(b,'cs'));
+            document.getElementById('student-list-init').innerHTML = students.map((s,i)=>`<tr><td style="font-weight:bold">${s}</td><td style="text-align:right"><button class="btn btn-delete" onclick="students.splice(${i},1);renderInitTable()">Smazat</button></td></tr>`).join('');
+            document.getElementById('finish-btn').classList.toggle('hidden', students.length === 0);
+        }
+
+        function proceedToAction() {
+            document.getElementById('step-registration').classList.add('hidden');
+            if(mode==='tech') {
+                techAttemptsCount = parseInt(document.getElementById('tech-attempts').value);
+                document.getElementById('tech-display-title').innerText = document.getElementById('tech-type').value;
+                document.getElementById('tech-input-list').innerHTML = students.map((name, i) => {
+                    let ins = "";
+                    for(let a=1; a<=techAttemptsCount; a++) ins += `<input type="text" style="width:50px; text-align:center; padding:10px; background:#000; color:#00ff88; border:1px solid #333; border-radius:8px; font-weight:bold; margin:0 2px;" id="att-${i}-${a}" placeholder="${a}.">`;
+                    return `<div class="tech-entry" style="display:flex; align-items:center; gap:15px; background:#000; padding:15px; border-radius:10px; border:1px solid #222;"><div style="flex:1; font-weight:bold;">${name}</div><div class="attempts-row" style="display:flex;">${ins}</div></div>`;
+                }).join('');
+                document.getElementById('step-tech-measure').classList.remove('hidden');
+            } else if(mode==='multi') {
+                const size = parseInt(document.getElementById('team-size').value);
+                let shuffled = [...students].sort(()=>Math.random()-0.5);
+                heats = []; for(let i=0; i<shuffled.length; i+=size) heats.push(shuffled.slice(i, i+size));
+                document.getElementById('step-multi-overview').classList.remove('hidden');
+                document.getElementById('heats-list-overview').innerHTML = heats.map((h,i)=>`<div style="background:#000; padding:15px; border-radius:10px; border:1px solid #333;"><strong>Tým ${i+1}</strong><br><small>${h.join(', ')}</small></div>`).join('');
+            } else {
+                document.getElementById('step-race-ui').classList.remove('hidden');
+                setupRaceUI();
+            }
+        }
+
+        function setupRaceUI() {
+            const grid = document.getElementById('runners-active-grid');
+            const title = document.getElementById('race-display-title');
+            document.getElementById('btn-next-step').classList.add('hidden');
+            document.getElementById('timer-big').innerText = "00:00.000";
+            document.getElementById('status-race').innerText = "PŘIPRAVIT...";
+            document.getElementById('status-race').style.color = "#aaa";
+            document.getElementById('start-area').classList.remove('hidden');
+            document.getElementById('start-area').innerHTML = `<button id="btn-master-start" class="btn btn-start" onclick="startGlobalSequence()">START</button>`;
+            
+            if(mode==='single') {
+                title.innerText = "Běžec: " + students[currentIndex];
+                grid.innerHTML = "";
+            } else {
+                let target = (mode==='multi') ? heats[currentIndex] : students;
+                title.innerText = (mode==='multi') ? `Rozběh ${currentIndex+1}` : "Vytrvalost - Všichni";
+                grid.innerHTML = target.map((n,i)=>`<div style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
+                    <div style="font-weight:bold; margin-bottom:10px; font-size:1rem;">${n}</div>
+                    <button class="btn btn-finish-runner" id="f-btn-${i}" disabled onclick="finishR(${i},'${n}')">CÍL</button>
+                    <div id="t-val-${i}" class="res-time" style="margin-top:10px;">--:--</div>
+                </div>`).join('');
+                finishedCount = 0;
+            }
+        }
+
+        function startGlobalSequence() {
+            document.getElementById('btn-master-start').classList.add('hidden');
+            sound.play();
+            setTimeout(()=> {
+                document.getElementById('status-race').innerText = "BĚŽÍ SE!";
+                document.getElementById('status-race').style.color = "#00ff88";
+                startTime = performance.now();
+                if(mode==='single') {
+                    document.getElementById('start-area').innerHTML = `<button id="btn-stop-single" class="btn btn-start" style="background:var(--danger); color:white;" onclick="stopSingle()">STOP</button>`;
+                } else {
+                    let target = (mode==='multi') ? heats[currentIndex] : students;
+                    target.forEach((_,i)=> document.getElementById('f-btn-'+i).disabled = false);
+                }
+                timerInterval = setInterval(()=> { document.getElementById('timer-big').innerText = formatTime(performance.now()-startTime); }, 10);
+            }, 3000);
+        }
+
+        function stopSingle() {
+            clearInterval(timerInterval);
+            let ms = performance.now() - startTime;
+            results.push({name: students[currentIndex], val: ms, display: formatTime(ms)});
+            document.getElementById('status-race').innerText = "DOBĚHNUTO!";
+            document.getElementById('start-area').innerHTML = ""; 
+            document.getElementById('btn-next-step').classList.remove('hidden');
+        }
+
+        function finishR(i, name) {
+            let ms = performance.now()-startTime;
+            results.push({name, val: ms, display: formatTime(ms)});
+            document.getElementById('f-btn-'+i).disabled = true;
+            document.getElementById('t-val-'+i).innerText = formatTime(ms);
+            finishedCount++;
+            let total = (mode==='multi') ? heats[currentIndex].length : students.length;
+            if(finishedCount >= total) { 
+                clearInterval(timerInterval); 
+                document.getElementById('status-race').innerText = "VŠICHNI V CÍLI";
+                document.getElementById('btn-next-step').classList.remove('hidden'); 
+            }
+        }
+
+        function nextPhase() {
+            if(mode==='single') { currentIndex++; if(currentIndex < students.length) setupRaceUI(); else showResults(); }
+            else if(mode==='multi') { currentIndex++; if(currentIndex < heats.length) setupRaceUI(); else showResults(); }
+            else { showResults(); }
+        }
+
+        function calculateTechResults() {
+            results = [];
+            students.forEach((name, i) => {
+                let best = 0;
+                for(let a=1; a<=techAttemptsCount; a++) {
+                    let v = document.getElementById(`att-${i}-${a}`).value;
+                    if(v && v.toLowerCase()!=='x' && !isNaN(v.replace(',','.'))) {
+                        let val = parseFloat(v.replace(',','.'));
+                        best = Math.max(best, val);
+                    }
+                }
+                results.push({name, val:best, display: best>0 ? best.toString().replace('.',',') : "X"});
+            });
+            showResults();
+        }
+
+        function showResults() {
+            document.querySelectorAll('.card').forEach(c=>c.classList.add('hidden'));
+            document.getElementById('step-results').classList.remove('hidden');
+            results.sort((a,b)=> (mode === 'tech' ? b.val - a.val : a.val - b.val));
+            document.getElementById('results-list').innerHTML = results.map((r,i)=>`<tr class="${i===0?'winner':''}"><td>${i+1}.</td><td style="font-weight:bold">${r.name}</td><td class="res-time">${r.display}</td></tr>`).join('');
+        }
+
+        function formatTime(ms){
+            let m=Math.floor(ms/60000), s=Math.floor((ms%60000)/1000), mi=Math.floor(ms%1000);
+            return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${mi.toString().padStart(3,'0')}`;
+        }
+        function startActualMultiRace() { document.getElementById('step-multi-overview').classList.add('hidden'); document.getElementById('step-race-ui').classList.remove('hidden'); setupRaceUI(); }
+        function exportToCSV() {
+            let csv = "Poradi;Jmeno;Vykon\n";
+            results.forEach((r, i) => csv += `${i+1};${r.name};${r.display}\n`);
+            const blob = new Blob(["\ufeff"+csv], {type:'text/csv;charset=utf-8;'});
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob); link.download = "vysledky_atletika.csv"; link.click();
+        }
+    </script>
+</body>
+</html>
