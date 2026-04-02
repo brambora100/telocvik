@@ -65,14 +65,14 @@
         .mode-selector {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 25px;
+            gap: 20px;
         }
 
         .mode-btn {
             background: #1a1a1a;
             border: 2px solid #333;
             color: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 15px;
             cursor: pointer;
             text-align: center;
@@ -109,7 +109,7 @@
         .btn-add { background: var(--accent); color: black; min-width: 130px; }
         .btn-delete { background: rgba(255, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); font-size: 0.75rem; padding: 8px 12px; }
         .btn-start { background: var(--accent); color: black; width: 100%; font-size: 1.8rem; padding: 25px; }
-        .btn-finish-runner { background: var(--blue); color: white; width: 100%; padding: 15px; font-weight: bold; }
+        .btn-finish-runner { background: var(--danger); color: white; width: 100%; padding: 12px; font-weight: bold; }
         .btn-next { background: #333; color: white; width: 100%; margin-top: 25px; padding: 20px; }
         .btn-export { background: #444; color: white; margin-top: 20px; font-size: 0.85rem; width: 100%; }
 
@@ -118,36 +118,27 @@
             font-size: 5rem;
             text-align: center;
             color: var(--accent);
-            margin: 30px 0;
+            margin: 15px 0;
             font-weight: bold;
             text-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
         }
+
+        #laps-count { font-size: 1.5rem; text-align: center; color: var(--gray); margin-bottom: 10px; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 25px; }
         th { text-align: left; color: var(--gray); font-size: 0.85rem; padding: 18px; border-bottom: 2px solid #222; }
         td { padding: 18px; border-bottom: 1px solid #1a1a1a; }
 
-        .res-time { font-family: monospace; font-weight: bold; color: var(--accent); font-size: 1.1rem; }
-
+        .res-time { font-family: monospace; font-weight: bold; color: var(--accent); }
         .hidden { display: none !important; }
-        .status-msg { text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; height: 1.8rem; }
+        .status-msg { text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; height: 1.8rem; }
         .winner { background: rgba(0, 255, 136, 0.1); color: var(--accent); }
 
-        /* MOBILNÍ VERZE (Media Query) */
+        .relay-laps { font-size: 0.7rem; color: #888; display: block; font-weight: normal; }
+
         @media (max-width: 600px) {
-            .navbar { padding: 1.5rem 0; margin-bottom: 1rem; }
-            .logo { font-size: 1.2rem; }
-            .card { padding: 1.5rem; border-radius: 15px; margin-bottom: 1.5rem; }
-            #timer-big { font-size: 12vw; margin: 15px 0; }
-            .input-group { flex-direction: column; gap: 10px; }
-            .btn-add { min-width: 100%; }
-            .btn-start { font-size: 1.4rem; padding: 20px; }
-            h2 { font-size: 1rem; margin-bottom: 15px; }
-            input, select { padding: 15px; font-size: 16px; } /* 16px brání zoomu na iPhone */
-            
-            /* Úprava technických disciplín pro mobil */
-            .tech-entry { flex-direction: column !important; align-items: flex-start !important; }
-            .attempts-row { width: 100%; justify-content: space-between; margin-top: 10px; }
+            .navbar { padding: 1.5rem 0; }
+            #timer-big { font-size: 15vw; }
         }
     </style>
 </head>
@@ -163,11 +154,19 @@
             <div class="mode-selector">
                 <div class="mode-btn" onclick="selectMode('single')">
                     <h3>🏃 Jednotlivci</h3>
-                    <p>Postupné sprinty 1 po 1</p>
+                    <p>Sprinty 1 po 1</p>
                 </div>
                 <div class="mode-btn" onclick="selectMode('multi')">
                     <h3>🏁 Rozběhy</h3>
-                    <p>Hromadný start (více drah)</p>
+                    <p>Rozlosování do drah</p>
+                </div>
+                <div class="mode-btn" onclick="selectMode('relay')">
+                    <h3>🤝 Štafety</h3>
+                    <p>Předávky 4x</p>
+                </div>
+                <div class="mode-btn" onclick="selectMode('beep')">
+                    <h3>🔊 Beep Test</h3>
+                    <p>Cílem je vydržet co nejdéle</p>
                 </div>
                 <div class="mode-btn" onclick="selectMode('tech')">
                     <h3>☄️ Technické</h3>
@@ -175,26 +174,26 @@
                 </div>
                 <div class="mode-btn" onclick="selectMode('endurance')">
                     <h3>🔋 Vytrvalost</h3>
-                    <p>Všichni naráz (např. 1000m)</p>
+                    <p>Hromadný start</p>
                 </div>
             </div>
         </div>
 
         <div id="step-registration" class="card hidden">
             <h2 id="reg-title">Příprava soupisky</h2>
-            <div id="config-area" style="margin-bottom: 30px;"></div>
+            <div id="config-area" style="margin-bottom: 30px; display: grid; gap: 10px;"></div>
 
             <div class="input-group">
-                <input type="text" id="student-name" placeholder="Jméno a Příjmení žáka" onkeypress="if(event.key === 'Enter') addStudent()">
+                <input type="text" id="student-name" placeholder="Jméno žáka / Tým" onkeypress="if(event.key === 'Enter') addStudent()">
                 <button class="btn btn-add" onclick="addStudent()">PŘIDAT</button>
             </div>
             
             <table>
-                <thead><tr><th>Jméno žáka</th><th style="text-align:right">Akce</th></tr></thead>
+                <thead><tr><th>Jméno / Tým</th><th style="text-align:right">Akce</th></tr></thead>
                 <tbody id="student-list-init"></tbody>
             </table>
             
-            <button id="finish-btn" class="btn btn-next hidden" style="background: white; color: black;" onclick="proceedToAction()">POTVRDIT A PŘEJÍT K MĚŘENÍ</button>
+            <button id="finish-btn" class="btn btn-next hidden" style="background: white; color: black;" onclick="proceedToAction()">POTVRDIT A ZAČÍT</button>
         </div>
 
         <div id="step-multi-overview" class="card hidden">
@@ -206,6 +205,7 @@
         <div id="step-race-ui" class="card hidden">
             <h2 id="race-display-title">Měření</h2>
             <div id="status-race" class="status-msg" style="color: #aaa;">PŘIPRAVIT...</div>
+            <div id="laps-count" class="hidden">Kolo: 0</div>
             <div id="timer-big">00:00.000</div>
             
             <div id="start-area" style="text-align:center;">
@@ -213,7 +213,7 @@
             </div>
             
             <div id="runners-active-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-top:20px;"></div>
-            <button id="btn-next-step" class="btn btn-next hidden" onclick="nextPhase()">DALŠÍ KROK</button>
+            <button id="btn-next-step" class="btn btn-next hidden" onclick="nextPhase()">ZOBRAZIT VÝSLEDKY</button>
         </div>
 
         <div id="step-tech-measure" class="card hidden">
@@ -225,11 +225,11 @@
         <div id="step-results" class="card hidden">
             <h2>🏆 KONEČNÉ VÝSLEDKY</h2>
             <table>
-                <thead><tr><th>#</th><th>Jméno</th><th id="result-unit-header">Výkon</th></tr></thead>
+                <thead><tr><th>#</th><th>Jméno / Tým</th><th id="result-unit-header">Výkon</th></tr></thead>
                 <tbody id="results-list"></tbody>
             </table>
             <button class="btn btn-export" onclick="exportToCSV()">⬇️ STÁHNOUT EXCEL (.CSV)</button>
-            <button class="btn btn-start" style="margin-top:30px" onclick="location.reload()">NOVÝ ZÁVOD</button>
+            <button class="btn btn-next" style="background: var(--accent); color: black;" onclick="location.reload()">NOVÝ ZÁVOD</button>
         </div>
     </div>
 
@@ -237,6 +237,8 @@
 
     <script>
         let mode='', students=[], heats=[], results=[], currentIndex=0, startTime, timerInterval, techAttemptsCount=3, finishedCount=0;
+        let beepInterval = 15, beepLaps = 0, currentBeepTime = 0;
+        let relayLapsData = [];
         const sound = document.getElementById('start-sound');
 
         function selectMode(m) {
@@ -244,25 +246,26 @@
             document.getElementById('mode-selection').classList.add('hidden');
             document.getElementById('step-registration').classList.remove('hidden');
             const cfg = document.getElementById('config-area');
-            if(mode==='multi') cfg.innerHTML = `<label>Počet drah: </label><select id="team-size"><option value="2">2</option><option value="4" selected>4</option><option value="6">6</option></select>`;
-            else if(mode==='tech') {
+            if(mode==='multi') {
+                cfg.innerHTML = `<label>Drah v rozběhu: </label><select id="team-size"><option value="2">2</option><option value="4" selected>4</option><option value="6">6</option></select>`;
+            } else if(mode==='relay') {
+                cfg.innerHTML = `<label>Štafeta 4x. Přihlášeno: ${students.length}</label>`;
+            } else if(mode==='tech') {
                 cfg.innerHTML = `
                     <label>Disciplína: </label>
-                    <select id="tech-type" style="margin-right:10px; margin-bottom:10px;">
+                    <select id="tech-type">
+                        <option value="Hod oštěpem">Hod oštěpem</option>
                         <option value="Vrh koulí">Vrh koulí</option>
                         <option value="Skok do výšky">Skok do výšky</option>
                         <option value="Skok do dálky">Skok do dálky</option>
-                        <option value="Hod oštěpem">Hod oštěpem</option>
                         <option value="Hod krikeťákem">Hod krikeťákem</option>
                     </select>
-                    <label>Pokusy: </label>
-                    <select id="tech-attempts">
-                        <option value="1">1</option>
-                        <option value="3" selected>3</option>
-                        <option value="6">6</option>
-                    </select>`;
-            }
-            else cfg.innerHTML = '';
+                    <label>Pokusů: </label>
+                    <input type="number" id="tech-attempts" value="3">
+                `;
+            } else if(mode==='beep') {
+                cfg.innerHTML = `<label>Startovní interval (s): </label><input type="number" id="beep-start-s" value="15">`;
+            } else cfg.innerHTML = '';
         }
 
         function addStudent() {
@@ -271,7 +274,6 @@
         }
 
         function renderInitTable() {
-            students.sort((a,b)=>a.localeCompare(b,'cs'));
             document.getElementById('student-list-init').innerHTML = students.map((s,i)=>`<tr><td style="font-weight:bold">${s}</td><td style="text-align:right"><button class="btn btn-delete" onclick="students.splice(${i},1);renderInitTable()">Smazat</button></td></tr>`).join('');
             document.getElementById('finish-btn').classList.toggle('hidden', students.length === 0);
         }
@@ -282,18 +284,17 @@
                 techAttemptsCount = parseInt(document.getElementById('tech-attempts').value);
                 document.getElementById('tech-display-title').innerText = document.getElementById('tech-type').value;
                 document.getElementById('tech-input-list').innerHTML = students.map((name, i) => {
-                    let ins = "";
-                    for(let a=1; a<=techAttemptsCount; a++) ins += `<input type="text" style="width:50px; text-align:center; padding:10px; background:#000; color:#00ff88; border:1px solid #333; border-radius:8px; font-weight:bold; margin:0 2px;" id="att-${i}-${a}" placeholder="${a}.">`;
-                    return `<div class="tech-entry" style="display:flex; align-items:center; gap:15px; background:#000; padding:15px; border-radius:10px; border:1px solid #222;"><div style="flex:1; font-weight:bold;">${name}</div><div class="attempts-row" style="display:flex;">${ins}</div></div>`;
+                    let ins = ""; for(let a=1; a<=techAttemptsCount; a++) ins += `<input type="text" style="width:50px; text-align:center; color:var(--accent);" id="att-${i}-${a}" placeholder="${a}.">`;
+                    return `<div style="display:flex; align-items:center; gap:15px; background:#000; padding:15px; border-radius:10px;"><div style="flex:1;">${name}</div><div style="display:flex; gap:5px;">${ins}</div></div>`;
                 }).join('');
                 document.getElementById('step-tech-measure').classList.remove('hidden');
-            } else if(mode==='multi') {
-                const size = parseInt(document.getElementById('team-size').value);
-                let shuffled = [...students].sort(()=>Math.random()-0.5);
-                heats = []; for(let i=0; i<shuffled.length; i+=size) heats.push(shuffled.slice(i, i+size));
+            } else if(mode==='multi' || mode==='relay') {
+                const size = (mode === 'relay') ? 4 : parseInt(document.getElementById('team-size').value);
+                heats = []; for(let i=0; i<students.length; i+=size) heats.push(students.slice(i, i+size));
                 document.getElementById('step-multi-overview').classList.remove('hidden');
-                document.getElementById('heats-list-overview').innerHTML = heats.map((h,i)=>`<div style="background:#000; padding:15px; border-radius:10px; border:1px solid #333;"><strong>Tým ${i+1}</strong><br><small>${h.join(', ')}</small></div>`).join('');
+                document.getElementById('heats-list-overview').innerHTML = heats.map((h,i)=>`<div style="background:#000; padding:15px; border-radius:10px; border:1px solid #333;"><strong>${mode==='relay'?'Tým':'Skupina'} ${i+1}</strong><br><small>${h.join(', ')}</small></div>`).join('');
             } else {
+                if(mode==='beep') beepInterval = parseFloat(document.getElementById('beep-start-s').value);
                 document.getElementById('step-race-ui').classList.remove('hidden');
                 setupRaceUI();
             }
@@ -304,24 +305,38 @@
             const title = document.getElementById('race-display-title');
             document.getElementById('btn-next-step').classList.add('hidden');
             document.getElementById('timer-big').innerText = "00:00.000";
-            document.getElementById('status-race').innerText = "PŘIPRAVIT...";
-            document.getElementById('status-race').style.color = "#aaa";
-            document.getElementById('start-area').classList.remove('hidden');
-            document.getElementById('start-area').innerHTML = `<button id="btn-master-start" class="btn btn-start" onclick="startGlobalSequence()">START</button>`;
             
-            if(mode==='single') {
-                title.innerText = "Běžec: " + students[currentIndex];
-                grid.innerHTML = "";
-            } else {
-                let target = (mode==='multi') ? heats[currentIndex] : students;
-                title.innerText = (mode==='multi') ? `Rozběh ${currentIndex+1}` : "Vytrvalost - Všichni";
-                grid.innerHTML = target.map((n,i)=>`<div style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
-                    <div style="font-weight:bold; margin-bottom:10px; font-size:1rem;">${n}</div>
-                    <button class="btn btn-finish-runner" id="f-btn-${i}" disabled onclick="finishR(${i},'${n}')">CÍL</button>
-                    <div id="t-val-${i}" class="res-time" style="margin-top:10px;">--:--</div>
+            let target = (mode==='single') ? [students[currentIndex]] : (mode==='multi' || mode==='relay') ? heats[currentIndex] : students;
+
+            if(mode==='beep') {
+                title.innerText = "BEEP TEST";
+                document.getElementById('laps-count').classList.remove('hidden');
+                grid.innerHTML = target.map((n,i)=>`<div id="card-${i}" style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
+                    <div style="font-weight:bold; margin-bottom:10px;">${n}</div>
+                    <button class="btn btn-finish-runner" id="f-btn-${i}" onclick="outBeep(${i},'${n}')">VYPADL</button>
                 </div>`).join('');
-                finishedCount = 0;
+            } else if(mode==='relay') {
+                title.innerText = target.join(' + '); relayLapsData = [];
+                grid.innerHTML = `<div style="background:#000; padding:30px; border-radius:20px; border:2px solid var(--blue); text-align:center; grid-column: 1 / -1;">
+                    <button class="btn btn-start" id="f-btn-0" disabled onclick="relaySplit(1)" style="background:var(--blue); color:white;">1. PŘEDÁVKA</button>
+                    <div id="relay-split-list" style="text-align:left; font-family:monospace; color:var(--accent); margin-top:15px;"></div>
+                </div>`;
+            } else if(mode==='endurance') {
+                title.innerText = "VYTRVALOST - HROMADNÝ START";
+                grid.innerHTML = target.map((n,i)=>`<div style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
+                    <div style="font-weight:bold;">${n}</div>
+                    <button class="btn btn-finish-runner" style="background:var(--blue); margin:10px 0;" id="f-btn-${i}" disabled onclick="finishR(${i},'${n}')">CÍL</button>
+                    <div id="t-val-${i}" class="res-time">--:--</div>
+                </div>`).join('');
+            } else {
+                title.innerText = (mode==='single') ? "Běžec: " + students[currentIndex] : target.join(', ');
+                grid.innerHTML = target.map((n,i)=>`<div style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
+                    <div style="font-weight:bold;">${n}</div>
+                    <button class="btn btn-finish-runner" style="background:var(--blue); margin:10px 0;" id="f-btn-${i}" disabled onclick="finishR(${i},'${n}')">CÍL</button>
+                    <div id="t-val-${i}" class="res-time">--:--</div>
+                </div>`).join('');
             }
+            finishedCount = 0;
         }
 
         function startGlobalSequence() {
@@ -329,25 +344,53 @@
             sound.play();
             setTimeout(()=> {
                 document.getElementById('status-race').innerText = "BĚŽÍ SE!";
-                document.getElementById('status-race').style.color = "#00ff88";
                 startTime = performance.now();
-                if(mode==='single') {
-                    document.getElementById('start-area').innerHTML = `<button id="btn-stop-single" class="btn btn-start" style="background:var(--danger); color:white;" onclick="stopSingle()">STOP</button>`;
-                } else {
-                    let target = (mode==='multi') ? heats[currentIndex] : students;
-                    target.forEach((_,i)=> document.getElementById('f-btn-'+i).disabled = false);
+                if(mode==='beep') startBeepLogic(); else {
+                    let count = (mode==='single') ? 1 : (mode==='multi') ? heats[currentIndex].length : students.length;
+                    for(let i=0; i<count; i++) if(document.getElementById('f-btn-'+i)) document.getElementById('f-btn-'+i).disabled = false;
+                    timerInterval = setInterval(()=> { document.getElementById('timer-big').innerText = formatTime(performance.now()-startTime); }, 10);
                 }
-                timerInterval = setInterval(()=> { document.getElementById('timer-big').innerText = formatTime(performance.now()-startTime); }, 10);
             }, 3000);
         }
 
-        function stopSingle() {
-            clearInterval(timerInterval);
+        function relaySplit(lapNum) {
             let ms = performance.now() - startTime;
-            results.push({name: students[currentIndex], val: ms, display: formatTime(ms)});
-            document.getElementById('status-race').innerText = "DOBĚHNUTO!";
-            document.getElementById('start-area').innerHTML = ""; 
-            document.getElementById('btn-next-step').classList.remove('hidden');
+            relayLapsData.push(formatTime(ms));
+            const btn = document.getElementById('f-btn-0');
+            const list = document.getElementById('relay-split-list');
+            if(lapNum < 4) {
+                list.innerHTML += `<div>${lapNum}. předávka: ${formatTime(ms)}</div>`;
+                btn.innerText = (lapNum === 3) ? "CÍL" : (lapNum + 1) + ". PŘEDÁVKA";
+                btn.setAttribute('onclick', `relaySplit(${lapNum + 1})`);
+            } else {
+                clearInterval(timerInterval); btn.disabled = true; btn.innerText = "DOKONČENO";
+                results.push({name: heats[currentIndex].join(' + '), val: ms, display: formatTime(ms), sub: "Předávky: " + relayLapsData.slice(0,3).join(' | ')});
+                document.getElementById('btn-next-step').classList.remove('hidden');
+            }
+        }
+
+        function startBeepLogic() {
+            currentBeepTime = beepInterval; beepLaps = 1;
+            document.getElementById('laps-count').innerText = "Kolo: " + beepLaps;
+            timerInterval = setInterval(() => {
+                let diff = (performance.now() - startTime) / 1000;
+                let remaining = currentBeepTime - (diff % currentBeepTime);
+                document.getElementById('timer-big').innerText = remaining.toFixed(2) + "s";
+                if(diff / currentBeepTime >= beepLaps) {
+                    beepLaps++; currentBeepTime = Math.max(3, currentBeepTime - 0.3);
+                    sound.currentTime = 3; sound.play();
+                    document.getElementById('laps-count').innerText = "Kolo: " + beepLaps;
+                }
+            }, 50);
+        }
+
+        function outBeep(i, name) {
+            let ms = performance.now() - startTime;
+            results.push({name, val: beepLaps, time: ms, display: `Kolo: ${beepLaps}`, sub: `Čas: ${formatTime(ms)}`});
+            document.getElementById('card-'+i).style.opacity = "0.3";
+            document.getElementById('f-btn-'+i).disabled = true;
+            finishedCount++;
+            if (finishedCount >= students.length) { clearInterval(timerInterval); showResults(); }
         }
 
         function finishR(i, name) {
@@ -356,41 +399,43 @@
             document.getElementById('f-btn-'+i).disabled = true;
             document.getElementById('t-val-'+i).innerText = formatTime(ms);
             finishedCount++;
-            let total = (mode==='multi') ? heats[currentIndex].length : students.length;
+            
+            let total = (mode==='single') ? 1 : (mode==='multi') ? heats[currentIndex].length : students.length;
             if(finishedCount >= total) { 
                 clearInterval(timerInterval); 
-                document.getElementById('status-race').innerText = "VŠICHNI V CÍLI";
                 document.getElementById('btn-next-step').classList.remove('hidden'); 
             }
         }
 
         function nextPhase() {
-            if(mode==='single') { currentIndex++; if(currentIndex < students.length) setupRaceUI(); else showResults(); }
-            else if(mode==='multi') { currentIndex++; if(currentIndex < heats.length) setupRaceUI(); else showResults(); }
-            else { showResults(); }
-        }
-
-        function calculateTechResults() {
-            results = [];
-            students.forEach((name, i) => {
-                let best = 0;
-                for(let a=1; a<=techAttemptsCount; a++) {
-                    let v = document.getElementById(`att-${i}-${a}`).value;
-                    if(v && v.toLowerCase()!=='x' && !isNaN(v.replace(',','.'))) {
-                        let val = parseFloat(v.replace(',','.'));
-                        best = Math.max(best, val);
-                    }
-                }
-                results.push({name, val:best, display: best>0 ? best.toString().replace('.',',') : "X"});
-            });
-            showResults();
+            let totalHeats = (mode==='single') ? students.length : (mode==='multi' || mode==='relay') ? heats.length : 1;
+            if(currentIndex < totalHeats - 1 && mode !== 'endurance') { 
+                currentIndex++; setupRaceUI(); 
+                document.getElementById('btn-master-start').classList.remove('hidden');
+            } else showResults();
         }
 
         function showResults() {
             document.querySelectorAll('.card').forEach(c=>c.classList.add('hidden'));
             document.getElementById('step-results').classList.remove('hidden');
-            results.sort((a,b)=> (mode === 'tech' ? b.val - a.val : a.val - b.val));
-            document.getElementById('results-list').innerHTML = results.map((r,i)=>`<tr class="${i===0?'winner':''}"><td>${i+1}.</td><td style="font-weight:bold">${r.name}</td><td class="res-time">${r.display}</td></tr>`).join('');
+            
+            if (mode === 'beep') {
+                results.sort((a,b) => {
+                    if (b.val !== a.val) return b.val - a.val;
+                    return b.time - a.time;
+                });
+            } else if (mode === 'tech') {
+                results.sort((a,b) => b.val - a.val);
+            } else {
+                results.sort((a,b) => a.val - b.val);
+            }
+
+            document.getElementById('results-list').innerHTML = results.map((r,i)=>`
+                <tr class="${i===0?'winner':''}">
+                    <td>${i+1}.</td>
+                    <td style="font-weight:bold">${r.name}${r.sub ? `<span class="relay-laps">${r.sub}</span>` : ''}</td>
+                    <td class="res-time">${r.display}</td>
+                </tr>`).join('');
         }
 
         function formatTime(ms){
@@ -399,11 +444,23 @@
         }
         function startActualMultiRace() { document.getElementById('step-multi-overview').classList.add('hidden'); document.getElementById('step-race-ui').classList.remove('hidden'); setupRaceUI(); }
         function exportToCSV() {
-            let csv = "Poradi;Jmeno;Vykon\n";
-            results.forEach((r, i) => csv += `${i+1};${r.name};${r.display}\n`);
+            let csv = "Poradi;Jmeno;Vykon;Detaily\n";
+            results.forEach((r, i) => csv += `${i+1};${r.name};${r.display};${r.sub || ''}\n`);
             const blob = new Blob(["\ufeff"+csv], {type:'text/csv;charset=utf-8;'});
             const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob); link.download = "vysledky_atletika.csv"; link.click();
+            link.href = URL.createObjectURL(blob); link.download = "vysledky.csv"; link.click();
+        }
+        function calculateTechResults() {
+            results = [];
+            students.forEach((name, i) => {
+                let best = 0;
+                for(let a=1; a<=techAttemptsCount; a++) {
+                    let v = document.getElementById(`att-${i}-${a}`).value.replace(',','.');
+                    if(v && !isNaN(v)) best = Math.max(best, parseFloat(v));
+                }
+                results.push({name, val: best, display: best.toString().replace('.',',')});
+            });
+            showResults();
         }
     </script>
 </body>
