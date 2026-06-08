@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Atletika měření</title>
+    <title>Atletika měření - All-in-One</title>
     <link rel="icon" type="image/png" href="https://emoji.aranja.com/emojis/apple/1f3c3-200d-2642-fe0f.png">
     <style>
         :root {
@@ -14,6 +14,8 @@
             --gray: #666;
             --danger: #ff4444;
             --blue: #2563eb;
+            --orange: #f97316;
+            --purple: #6d28d9;
         }
 
         body {
@@ -83,10 +85,34 @@
         .mode-btn h3 { margin: 0 0 5px 0; color: var(--accent); font-size: 1rem; }
         .mode-btn p { margin: 0; font-size: 0.75rem; color: #888; }
 
-        .input-group { display: flex; gap: 15px; margin-bottom: 30px; }
+        .template-section {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-template {
+            background: var(--blue);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-template:hover { transform: scale(1.05); }
+
+        .input-group { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
 
         input, select {
             flex: 1;
+            min-width: 150px;
             padding: 18px;
             background: #000;
             border: 1px solid #333;
@@ -109,7 +135,10 @@
         .btn-add { background: var(--accent); color: black; min-width: 130px; }
         .btn-delete { background: rgba(255, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); font-size: 0.75rem; padding: 8px 12px; }
         .btn-start { background: var(--accent); color: black; width: 100%; font-size: 1.8rem; padding: 25px; }
-        .btn-finish-runner { background: var(--danger); color: white; width: 100%; padding: 12px; font-weight: bold; }
+        .btn-relay-action { background: var(--blue); color: white; width: 100%; padding: 20px; font-size: 1.2rem; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase;}
+        .btn-relay-action:disabled { background: #222; color: #555; cursor: not-allowed; }
+        .btn-finish-runner { background: var(--blue); color: white; width: 100%; padding: 12px; font-weight: bold; border-radius: 8px; border:none; cursor:pointer; text-transform: uppercase; }
+        .btn-finish-runner:disabled { background: #333; color: #666; cursor: default; }
         .btn-next { background: #333; color: white; width: 100%; margin-top: 25px; padding: 20px; }
         .btn-export { background: #444; color: white; margin-top: 20px; font-size: 0.85rem; width: 100%; }
 
@@ -134,7 +163,40 @@
         .status-msg { text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; height: 1.8rem; }
         .winner { background: rgba(0, 255, 136, 0.1); color: var(--accent); }
 
-        .relay-laps { font-size: 0.7rem; color: #888; display: block; font-weight: normal; }
+        .relay-laps, .lap-details { font-size: 0.75rem; color: #aaa; display: block; font-weight: normal; margin-top: 5px; font-family: monospace; line-height: 1.4; }
+
+        .relay-live-list {
+            margin-top: 10px;
+            background: #000;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #222;
+            font-family: monospace;
+            color: #ccc;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+        .relay-live-list div { padding: 4px 0; border-bottom: 1px solid #111; }
+
+        .relay-lanes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .lane-card {
+            background: #161616;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #333;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .lane-number { font-size: 1.2rem; font-weight: 900; color: var(--orange); margin-bottom: 10px; text-transform: uppercase; }
 
         @media (max-width: 600px) {
             .navbar { padding: 1.5rem 0; }
@@ -157,12 +219,12 @@
                     <p>Sprinty 1 po 1</p>
                 </div>
                 <div class="mode-btn" onclick="selectMode('multi')">
-                    <h3>🏁 Rozběhy</h3>
-                    <p>Rozlosování do drah</p>
+                    <h3>🏁 Rozběhy drah</h3>
+                    <p>Náhodní rivalové proti sobě</p>
                 </div>
                 <div class="mode-btn" onclick="selectMode('relay')">
-                    <h3>🤝 Štafety</h3>
-                    <p>Předávky 4x</p>
+                    <h3>🤝 Štafety v drahách</h3>
+                    <p>Náhodně vylosované štafety vedle sebe</p>
                 </div>
                 <div class="mode-btn" onclick="selectMode('beep')">
                     <h3>🔊 Beep Test</h3>
@@ -174,14 +236,21 @@
                 </div>
                 <div class="mode-btn" onclick="selectMode('endurance')">
                     <h3>🔋 Vytrvalost</h3>
-                    <p>Hromadný start</p>
+                    <p>Hromadný start na více kol</p>
                 </div>
             </div>
         </div>
 
         <div id="step-registration" class="card hidden">
             <h2 id="reg-title">Příprava soupisky</h2>
-            <div id="config-area" style="margin-bottom: 30px; display: grid; gap: 10px;"></div>
+            
+            <div class="template-section">
+                <button class="btn-template" onclick="loadClassPreset('7A')">TŘÍDA 7.A</button>
+                <button class="btn-template" onclick="loadClassPreset('7B')" style="background: var(--purple);">TŘÍDA 7.B</button>
+                <button class="btn-template" onclick="loadClassPreset('MIX')" style="background: #444;">SMÍCHANÉ (A+B)</button>
+            </div>
+
+            <div id="config-area" style="margin-bottom: 30px; display: grid; gap: 15px; background: #161616; padding: 20px; border-radius: 12px; border: 1px solid #222;"></div>
 
             <div class="input-group">
                 <input type="text" id="student-name" placeholder="Jméno žáka / Tým" onkeypress="if(event.key === 'Enter') addStudent()">
@@ -189,16 +258,16 @@
             </div>
             
             <table>
-                <thead><tr><th>Jméno / Tým</th><th style="text-align:right">Akce</th></tr></thead>
+                <thead><tr><th>Jméno běžce / Tým</th><th style="text-align:right">Akce</th></tr></thead>
                 <tbody id="student-list-init"></tbody>
             </table>
             
-            <button id="finish-btn" class="btn btn-next hidden" style="background: white; color: black;" onclick="proceedToAction()">POTVRDIT A ZAČÍT</button>
+            <button id="finish-btn" class="btn btn-next hidden" style="background: white; color: black; margin-top:20px;" onclick="proceedToAction()">🎲 ROZLOSOVAT A ZAČÍT</button>
         </div>
 
         <div id="step-multi-overview" class="card hidden">
-            <h2>Rozlosované skupiny</h2>
-            <div id="heats-list-overview" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:15px;"></div>
+            <h2 id="heats-overview-title">🎲 Výsledky losování skupin</h2>
+            <div id="heats-list-overview" class="relay-lanes-grid"></div>
             <button class="btn btn-start" style="margin-top:25px" onclick="startActualMultiRace()">VŠE PŘIPRAVENO!</button>
         </div>
 
@@ -209,10 +278,11 @@
             <div id="timer-big">00:00.000</div>
             
             <div id="start-area" style="text-align:center;">
-                <button id="btn-master-start" class="btn btn-start" onclick="startGlobalSequence()">START</button>
+                <button id="btn-master-start" class="btn btn-start" onclick="startGlobalSequence()">START STOPKY</button>
             </div>
             
-            <div id="runners-active-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-top:20px;"></div>
+            <div id="runners-active-grid"></div>
+            
             <button id="btn-next-step" class="btn btn-next hidden" onclick="nextPhase()">ZOBRAZIT VÝSLEDKY</button>
         </div>
 
@@ -223,9 +293,9 @@
         </div>
 
         <div id="step-results" class="card hidden">
-            <h2>🏆 KONEČNÉ VÝSLEDKY</h2>
+            <h2 id="results-main-title">🏆 KONEČNÉ VÝSLEDKY</h2>
             <table>
-                <thead><tr><th>#</th><th>Jméno / Tým</th><th id="result-unit-header">Výkon</th></tr></thead>
+                <thead><tr><th>#</th><th>Jméno / Tým</th><th id="result-unit-header">Celkový čas (Průměr)</th></tr></thead>
                 <tbody id="results-list"></tbody>
             </table>
             <button class="btn btn-export" onclick="exportToCSV()">⬇️ STÁHNOUT EXCEL (.CSV)</button>
@@ -236,36 +306,86 @@
     <audio id="start-sound" src="https://image2url.com/r2/default/audio/1775055627494-a1578d7f-1a4e-4b19-9c7b-164a34a90c89.mp3"></audio>
 
     <script>
-        let mode='', students=[], heats=[], results=[], currentIndex=0, startTime, timerInterval, techAttemptsCount=3, finishedCount=0;
+        const class7A = ["Adam", "Jakub Č.", "Giorge", "Jakub H.", "Petr", "Jan", "Patrik", "Mikuláš", "Ondřej", "Dominik", "Kiril"];
+        const class7B = ["Oliver", "Jakub J.", "Josef", "Karel", "Matěj", "Fanda", "Illia", "Kryštof", "Martin", "Ríša", "Vojta V.", "Vojta K."];
+
+        let students=[], heats=[], results=[], currentIndex=0, startTime, timerInterval, techAttemptsCount=3, finishedCount=0;
         let beepInterval = 15, beepLaps = 0, currentBeepTime = 0;
-        let relayLapsData = [];
+        let mode='', relayRunnersCount = 2, maxLanesCount = 2, laneStates = [], enduranceLapsGoal = 3, runnersData = [];
+
         const sound = document.getElementById('start-sound');
+
+        // Funkce pro náhodné promíchání pole (Fisher-Yates algoritmus)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function loadClassPreset(type) {
+            students = [];
+            if (type === '7A') students = [...class7A];
+            else if (type === '7B') students = [...class7B];
+            else if (type === 'MIX') students = [...class7A, ...class7B];
+            renderInitTable();
+        }
 
         function selectMode(m) {
             mode = m;
             document.getElementById('mode-selection').classList.add('hidden');
             document.getElementById('step-registration').classList.remove('hidden');
             const cfg = document.getElementById('config-area');
+            
             if(mode==='multi') {
-                cfg.innerHTML = `<label>Drah v rozběhu: </label><select id="team-size"><option value="2">2</option><option value="4" selected>4</option><option value="6">6</option></select>`;
+                cfg.innerHTML = `<div><label>Počet drah v rozběhu: </label><select id="team-size"><option value="2" selected>2 dráhy</option><option value="4">4 dráhy</option></select></div>`;
             } else if(mode==='relay') {
-                cfg.innerHTML = `<label>Štafeta 4x. Přihlášeno: ${students.length}</label>`;
+                cfg.innerHTML = `
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
+                        <div>
+                            <label>Kolik běžců je v jednom týmu: </label>
+                            <select id="relay-runners">
+                                <option value="2" selected>2 běžci (Dvojice)</option>
+                                <option value="3">3 běžci</option>
+                                <option value="4">4 běžci (Klasika)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Maximální počet drah vedle sebe: </label>
+                            <select id="relay-max-lanes">
+                                <option value="2" selected>2 dráhy (Rivalové proti sobě)</option>
+                                <option value="3">3 dráhy</option>
+                                <option value="4">4 dráhy</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+            } else if(mode==='endurance') {
+                cfg.innerHTML = `<div><label>Počet kol závodu:</label><input type="number" id="laps-goal" value="3" min="1"></div>`;
             } else if(mode==='tech') {
                 cfg.innerHTML = `
-                    <label>Disciplína: </label>
-                    <select id="tech-type">
-                        <option value="Hod oštěpem">Hod oštěpem</option>
-                        <option value="Vrh koulí">Vrh koulí</option>
-                        <option value="Skok do výšky">Skok do výšky</option>
-                        <option value="Skok do dálky">Skok do dálky</option>
-                        <option value="Hod krikeťákem">Hod krikeťákem</option>
-                    </select>
-                    <label>Pokusů: </label>
-                    <input type="number" id="tech-attempts" value="3">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <div>
+                            <label>Disciplína: </label>
+                            <select id="tech-type">
+                                <option value="Hod oštěpem">Hod oštěpem</option>
+                                <option value="Vrh koulí">Vrh koulí</option>
+                                <option value="Skok do výšky">Skok do výšky</option>
+                                <option value="Skok do dálky">Skok do dálky</option>
+                                <option value="Hod krikeťákem">Hod krikeťákem</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Počet pokusů: </label>
+                            <input type="number" id="tech-attempts" value="3" min="1">
+                        </div>
+                    </div>
                 `;
             } else if(mode==='beep') {
-                cfg.innerHTML = `<label>Startovní interval (s): </label><input type="number" id="beep-start-s" value="15">`;
-            } else cfg.innerHTML = '';
+                cfg.innerHTML = `<div><label>Startovní interval (s): </label><input type="number" id="beep-start-s" value="15"></div>`;
+            } else {
+                cfg.innerHTML = '';
+            }
         }
 
         function addStudent() {
@@ -279,7 +399,11 @@
         }
 
         function proceedToAction() {
+            // KLÍČOVÝ KROK: Kompletně náhodně promícháme celou soupisku studentů před rozřazením!
+            shuffleArray(students);
+
             document.getElementById('step-registration').classList.add('hidden');
+            
             if(mode==='tech') {
                 techAttemptsCount = parseInt(document.getElementById('tech-attempts').value);
                 document.getElementById('tech-display-title').innerText = document.getElementById('tech-type').value;
@@ -288,11 +412,46 @@
                     return `<div style="display:flex; align-items:center; gap:15px; background:#000; padding:15px; border-radius:10px;"><div style="flex:1;">${name}</div><div style="display:flex; gap:5px;">${ins}</div></div>`;
                 }).join('');
                 document.getElementById('step-tech-measure').classList.remove('hidden');
+            } else if(mode==='endurance') {
+                enduranceLapsGoal = parseInt(document.getElementById('laps-goal').value) || 1;
+                document.getElementById('step-race-ui').classList.remove('hidden');
+                setupRaceUI();
             } else if(mode==='multi' || mode==='relay') {
-                const size = (mode === 'relay') ? 4 : parseInt(document.getElementById('team-size').value);
-                heats = []; for(let i=0; i<students.length; i+=size) heats.push(students.slice(i, i+size));
+                heats = [];
+                if (mode === 'relay') {
+                    relayRunnersCount = parseInt(document.getElementById('relay-runners').value);
+                    maxLanesCount = parseInt(document.getElementById('relay-max-lanes').value);
+                    
+                    let allTeams = [];
+                    for(let i=0; i<students.length; i+=relayRunnersCount) {
+                        let team = students.slice(i, i+relayRunnersCount);
+                        if(team.length > 0) allTeams.push(team);
+                    }
+                    for(let i=0; i<allTeams.length; i+=maxLanesCount) {
+                        heats.push(allTeams.slice(i, i+maxLanesCount));
+                    }
+                    
+                    document.getElementById('heats-overview-title').innerText = `🎲 Náhodně vylosované štafety (${relayRunnersCount} běžci)`;
+                    document.getElementById('heats-list-overview').innerHTML = heats.map((raceTeams, raceIdx) => `
+                        <div style="background:#000; padding:20px; border-radius:12px; border:1px solid #333; grid-column: 1 / -1;">
+                            <strong style="color:var(--accent)">ROZBĚH ${raceIdx+1}</strong>
+                            <div class="relay-lanes-grid" style="margin-top:10px;">
+                                ${raceTeams.map((team, laneIdx) => `
+                                    <div style="background:#111; padding:12px; border-radius:8px; border:1px solid #222;">
+                                        <span style="color:var(--orange); font-weight:bold;">Dráha ${laneIdx+1}:</span><br>
+                                        <small>${team.join(' ➔ ')}</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    const size = parseInt(document.getElementById('team-size').value);
+                    document.getElementById('heats-overview-title').innerText = "🎲 Náhodně rozlosované běžící dvojice/čtveřice";
+                    for(let i=0; i<students.length; i+=size) heats.push(students.slice(i, i+size));
+                    document.getElementById('heats-list-overview').innerHTML = heats.map((h,i)=>`<div style="background:#000; padding:15px; border-radius:10px; border:1px solid #333;"><strong>Rozběh ${i+1}</strong><br><small>${h.join(' vs ')}</small></div>`).join('');
+                }
                 document.getElementById('step-multi-overview').classList.remove('hidden');
-                document.getElementById('heats-list-overview').innerHTML = heats.map((h,i)=>`<div style="background:#000; padding:15px; border-radius:10px; border:1px solid #333;"><strong>${mode==='relay'?'Tým':'Skupina'} ${i+1}</strong><br><small>${h.join(', ')}</small></div>`).join('');
             } else {
                 if(mode==='beep') beepInterval = parseFloat(document.getElementById('beep-start-s').value);
                 document.getElementById('step-race-ui').classList.remove('hidden');
@@ -305,38 +464,75 @@
             const title = document.getElementById('race-display-title');
             document.getElementById('btn-next-step').classList.add('hidden');
             document.getElementById('timer-big').innerText = "00:00.000";
+            finishedCount = 0;
             
-            let target = (mode==='single') ? [students[currentIndex]] : (mode==='multi' || mode==='relay') ? heats[currentIndex] : students;
-
-            if(mode==='beep') {
+            if(mode==='endurance') {
+                title.innerText = "VYTRVALOST - HROMADNÝ START";
+                grid.className = "relay-lanes-grid";
+                runnersData = students.map(name => ({ name: name, currentLap: 0, lapsTimes: [], finished: false }));
+                grid.innerHTML = runnersData.map((r, i) => `
+                    <div id="runner-card-${i}" style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
+                        <div style="font-weight:bold; margin-bottom:8px; height:40px; display:flex; align-items:center; justify-content:center; line-height:1.2;">${r.name}</div>
+                        <button class="btn-finish-runner" id="btn-lap-${i}" disabled onclick="recordLap(${i})">KOLO 1 / ${enduranceLapsGoal}</button>
+                        <div id="last-lap-${i}" style="font-size:0.7rem; color:var(--accent); margin-top:8px; font-family:monospace;">Čeká na start...</div>
+                    </div>
+                `).join('');
+            } else if(mode==='beep') {
                 title.innerText = "BEEP TEST";
                 document.getElementById('laps-count').classList.remove('hidden');
-                grid.innerHTML = target.map((n,i)=>`<div id="card-${i}" style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
+                grid.className = "relay-lanes-grid";
+                grid.innerHTML = students.map((n,i)=>`<div id="card-${i}" style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
                     <div style="font-weight:bold; margin-bottom:10px;">${n}</div>
-                    <button class="btn btn-finish-runner" id="f-btn-${i}" onclick="outBeep(${i},'${n}')">VYPADL</button>
+                    <button class="btn-finish-runner" id="f-btn-${i}" onclick="outBeep(${i},'${n}')">VYPADL</button>
                 </div>`).join('');
             } else if(mode==='relay') {
-                title.innerText = target.join(' + '); relayLapsData = [];
-                grid.innerHTML = `<div style="background:#000; padding:30px; border-radius:20px; border:2px solid var(--blue); text-align:center; grid-column: 1 / -1;">
-                    <button class="btn btn-start" id="f-btn-0" disabled onclick="relaySplit(1)" style="background:var(--blue); color:white;">1. PŘEDÁVKA</button>
-                    <div id="relay-split-list" style="text-align:left; font-family:monospace; color:var(--accent); margin-top:15px;"></div>
-                </div>`;
-            } else if(mode==='endurance') {
-                title.innerText = "VYTRVALOST - HROMADNÝ START";
+                let currentRaceTeams = heats[currentIndex];
+                title.innerText = `ŠTAFETY - ROZBĚH ${currentIndex + 1} z ${heats.length}`;
+                grid.className = "relay-lanes-grid";
+                laneStates = [];
+                
+                grid.innerHTML = currentRaceTeams.map((team, laneIdx) => {
+                    laneStates.push({ currentStep: 0, times: [], finished: false, runners: team });
+                    let runnersStatusHtml = team.map((name, rIdx) => `
+                        <div id="lane-${laneIdx}-runner-${rIdx}" style="color: ${rIdx===0 ? 'var(--accent)' : '#666'}; font-size:0.9rem; font-weight:bold;">
+                            ${rIdx+1}. úsek: ${name}
+                        </div>
+                    `).join('');
+                    return `
+                        <div class="lane-card" id="lane-card-${laneIdx}">
+                            <div class="lane-number">Dráha ${laneIdx + 1}</div>
+                            <div style="background:#000; padding:10px; border-radius:8px; margin-bottom:15px; text-align:left; display:grid; gap:5px;">
+                                ${runnersStatusHtml}
+                            </div>
+                            <button class="btn btn-relay-action" id="btn-lane-trigger-${laneIdx}" disabled onclick="handleParallelRelayClick(${laneIdx})">
+                                Čeká na start
+                            </button>
+                            <div class="relay-live-list">
+                                <strong>Mezičasy:</strong>
+                                <div id="lane-${laneIdx}-splits"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else if(mode==='multi') {
+                let target = heats[currentIndex];
+                title.innerText = "Rozběh " + (currentIndex+1) + " / " + heats.length;
+                grid.className = "relay-lanes-grid";
                 grid.innerHTML = target.map((n,i)=>`<div style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
-                    <div style="font-weight:bold;">${n}</div>
-                    <button class="btn btn-finish-runner" style="background:var(--blue); margin:10px 0;" id="f-btn-${i}" disabled onclick="finishR(${i},'${n}')">CÍL</button>
-                    <div id="t-val-${i}" class="res-time">--:--</div>
+                    <div style="font-weight:bold; font-size:1.1rem; margin-bottom:10px;">Dráha ${i+1}: ${n}</div>
+                    <button class="btn btn-finish-runner" id="f-btn-${i}" disabled onclick="finishR(${i},'${n}')">CÍL</button>
+                    <div id="t-val-${i}" class="res-time" style="margin-top:10px; font-size:1.3rem;">--:--</div>
                 </div>`).join('');
             } else {
-                title.innerText = (mode==='single') ? "Běžec: " + students[currentIndex] : target.join(', ');
+                let target = (mode==='single') ? [students[currentIndex]] : students;
+                title.innerText = `Běžec ${currentIndex+1} z ${students.length}`;
+                grid.className = "relay-lanes-grid";
                 grid.innerHTML = target.map((n,i)=>`<div style="background:#000; padding:15px; border-radius:12px; border:1px solid #333; text-align:center;">
                     <div style="font-weight:bold;">${n}</div>
-                    <button class="btn btn-finish-runner" style="background:var(--blue); margin:10px 0;" id="f-btn-${i}" disabled onclick="finishR(${i},'${n}')">CÍL</button>
+                    <button class="btn btn-finish-runner" id="f-btn-${i}" disabled onclick="finishR(${i},'${n}')">CÍL</button>
                     <div id="t-val-${i}" class="res-time">--:--</div>
                 </div>`).join('');
             }
-            finishedCount = 0;
         }
 
         function startGlobalSequence() {
@@ -345,27 +541,104 @@
             setTimeout(()=> {
                 document.getElementById('status-race').innerText = "BĚŽÍ SE!";
                 startTime = performance.now();
-                if(mode==='beep') startBeepLogic(); else {
-                    let count = (mode==='single') ? 1 : (mode==='multi') ? heats[currentIndex].length : students.length;
+                
+                if(mode==='endurance') {
+                    runnersData.forEach((_, i) => {
+                        document.getElementById('btn-lap-'+i).disabled = false;
+                        document.getElementById('last-lap-'+i).innerText = "Běží...";
+                    });
+                } else if(mode==='beep') {
+                    startBeepLogic(); 
+                } else if(mode==='relay') {
+                    laneStates.forEach((state, laneIdx) => {
+                        document.getElementById(`btn-lane-trigger-${laneIdx}`).disabled = false;
+                        updateParallelButtonText(laneIdx);
+                    });
+                } else {
+                    let count = (mode==='single') ? 1 : heats[currentIndex].length;
                     for(let i=0; i<count; i++) if(document.getElementById('f-btn-'+i)) document.getElementById('f-btn-'+i).disabled = false;
+                }
+                if(mode!=='beep') {
                     timerInterval = setInterval(()=> { document.getElementById('timer-big').innerText = formatTime(performance.now()-startTime); }, 10);
                 }
             }, 3000);
         }
 
-        function relaySplit(lapNum) {
-            let ms = performance.now() - startTime;
-            relayLapsData.push(formatTime(ms));
-            const btn = document.getElementById('f-btn-0');
-            const list = document.getElementById('relay-split-list');
-            if(lapNum < 4) {
-                list.innerHTML += `<div>${lapNum}. předávka: ${formatTime(ms)}</div>`;
-                btn.innerText = (lapNum === 3) ? "CÍL" : (lapNum + 1) + ". PŘEDÁVKA";
-                btn.setAttribute('onclick', `relaySplit(${lapNum + 1})`);
+        function recordLap(runnerIndex) {
+            const r = runnersData[runnerIndex];
+            if(r.finished) return;
+            const totalElapsed = performance.now() - startTime;
+            r.currentLap++; r.lapsTimes.push(totalElapsed);
+            const btn = document.getElementById('btn-lap-' + runnerIndex);
+            const status = document.getElementById('last-lap-' + runnerIndex);
+
+            if(r.currentLap < enduranceLapsGoal) {
+                btn.innerText = `KOLO ${r.currentLap + 1} / ${enduranceLapsGoal}`;
+                status.innerText = `Kolo ${r.currentLap}: ${formatTime(totalElapsed)}`;
             } else {
-                clearInterval(timerInterval); btn.disabled = true; btn.innerText = "DOKONČENO";
-                results.push({name: heats[currentIndex].join(' + '), val: ms, display: formatTime(ms), sub: "Předávky: " + relayLapsData.slice(0,3).join(' | ')});
-                document.getElementById('btn-next-step').classList.remove('hidden');
+                r.finished = true; btn.innerText = "CÍL"; btn.style.background = "var(--accent)"; btn.style.color = "black"; btn.disabled = true;
+                status.innerText = `DOKONČENO: ${formatTime(totalElapsed)}`;
+                if(runnersData.every(runner => runner.finished)) {
+                    clearInterval(timerInterval);
+                    document.getElementById('btn-next-step').classList.remove('hidden');
+                    document.getElementById('btn-next-step').innerText = "ZOBRAZIT VÝSLEDKY VYTRVALOSTI 🏆";
+                }
+            }
+        }
+
+        function handleParallelRelayClick(laneIdx) {
+            let ms = performance.now() - startTime;
+            let state = laneStates[laneIdx];
+            if (state.finished) return;
+
+            state.times.push(ms);
+            let currentRunnerName = state.runners[state.currentStep];
+            let segmentTime = state.currentStep === 0 ? ms : (ms - state.times[state.currentStep - 1]);
+            
+            const splitsDiv = document.getElementById(`lane-${laneIdx}-splits`);
+            splitsDiv.innerHTML += `<div>⏱️ ${state.currentStep+1}.úsek (${currentRunnerName}): ${formatTime(segmentTime)}</div>`;
+            
+            document.getElementById(`lane-${laneIdx}-runner-${state.currentStep}`).style.color = "#444";
+            state.currentStep++;
+            
+            if (state.currentStep < state.runners.length) {
+                document.getElementById(`lane-${laneIdx}-runner-${state.currentStep}`).style.color = "var(--accent)";
+                updateParallelButtonText(laneIdx);
+            } else {
+                state.finished = true;
+                const btn = document.getElementById(`btn-lane-trigger-${laneIdx}`);
+                btn.disabled = true; btn.innerText = "DOKONČENO"; btn.style.background = "#222";
+                document.getElementById(`lane-card-${laneIdx}`).style.borderColor = "var(--accent)";
+                
+                let subTextArr = state.runners.map((name, idx) => {
+                    let seg = idx === 0 ? state.times[0] : (state.times[idx] - state.times[idx-1]);
+                    return `${idx+1}.b (${name}): ${formatTime(seg)}`;
+                });
+                
+                results.push({
+                    name: `Štafeta: ${state.runners.join(' + ')} (Dráha ${laneIdx+1})`,
+                    val: ms,
+                    display: formatTime(ms),
+                    sub: "Úseky ➔ " + subTextArr.join(' | ')
+                });
+                
+                if (laneStates.every(s => s.finished)) {
+                    clearInterval(timerInterval);
+                    document.getElementById('btn-next-step').classList.remove('hidden');
+                    document.getElementById('btn-next-step').innerText = currentIndex < heats.length - 1 ? "NASTAVIT DALŠÍ ROZBĚH ➔" : "UKÁZAT CELKOVÉ VÝSLEDKY 🏆";
+                }
+            }
+        }
+
+        function updateParallelButtonText(laneIdx) {
+            const btn = document.getElementById(`btn-lane-trigger-${laneIdx}`);
+            let state = laneStates[laneIdx];
+            if (state.currentStep === state.runners.length - 1) {
+                btn.innerText = `🏁 CÍL (${state.runners[state.currentStep]})`;
+                btn.style.background = "var(--danger)";
+            } else {
+                btn.innerText = `🤝 PŘEDAT na: ${state.runners[state.currentStep + 1]}`;
+                btn.style.background = "var(--blue)";
             }
         }
 
@@ -400,30 +673,41 @@
             document.getElementById('t-val-'+i).innerText = formatTime(ms);
             finishedCount++;
             
-            let total = (mode==='single') ? 1 : (mode==='multi') ? heats[currentIndex].length : students.length;
+            let total = (mode==='single') ? 1 : heats[currentIndex].length;
             if(finishedCount >= total) { 
                 clearInterval(timerInterval); 
-                document.getElementById('btn-next-step').classList.remove('hidden'); 
+                document.getElementById('btn-next-step').classList.remove('hidden');
+                document.getElementById('btn-next-step').innerText = ((mode==='single' && currentIndex < students.length - 1) || (mode==='multi' && currentIndex < heats.length - 1)) ? "DALŠÍ ROZBĚH ➔" : "UKÁZAT VÝSLEDKY 🏆";
             }
         }
 
         function nextPhase() {
-            let totalHeats = (mode==='single') ? students.length : (mode==='multi' || mode==='relay') ? heats.length : 1;
-            if(currentIndex < totalHeats - 1 && mode !== 'endurance') { 
+            if(mode === 'endurance') { showResults(); return; }
+            let totalHeats = (mode==='single') ? students.length : heats.length;
+            if(currentIndex < totalHeats - 1) { 
                 currentIndex++; setupRaceUI(); 
                 document.getElementById('btn-master-start').classList.remove('hidden');
-            } else showResults();
+                document.getElementById('status-race').innerText = "PŘIPRAVIT...";
+            } else { showResults(); }
         }
 
         function showResults() {
             document.querySelectorAll('.card').forEach(c=>c.classList.add('hidden'));
             document.getElementById('step-results').classList.remove('hidden');
             
-            if (mode === 'beep') {
-                results.sort((a,b) => {
-                    if (b.val !== a.val) return b.val - a.val;
-                    return b.time - a.time;
+            if(mode === 'endurance') {
+                document.getElementById('results-main-title').innerText = "🏆 KONEČNÉ POŘADÍ: VYTRVALOST";
+                results = runnersData.map(r => {
+                    const totalTime = r.lapsTimes[r.lapsTimes.length - 1];
+                    const avgTime = totalTime / enduranceLapsGoal;
+                    let lapDetails = "Průjezdy: ";
+                    r.lapsTimes.forEach((t, idx) => { lapDetails += `${idx+1}.k (${formatTime(t)}) | `; });
+                    return { name: r.name, val: totalTime, display: `${formatTime(totalTime)} (ø ${formatTime(avgTime)})`, sub: lapDetails };
                 });
+            }
+
+            if (mode === 'beep') {
+                results.sort((a,b) => (b.val !== a.val) ? (b.val - a.val) : (a.time - b.time));
             } else if (mode === 'tech') {
                 results.sort((a,b) => b.val - a.val);
             } else {
@@ -443,6 +727,7 @@
             return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${mi.toString().padStart(3,'0')}`;
         }
         function startActualMultiRace() { document.getElementById('step-multi-overview').classList.add('hidden'); document.getElementById('step-race-ui').classList.remove('hidden'); setupRaceUI(); }
+        
         function exportToCSV() {
             let csv = "Poradi;Jmeno;Vykon;Detaily\n";
             results.forEach((r, i) => csv += `${i+1};${r.name};${r.display};${r.sub || ''}\n`);
@@ -450,6 +735,7 @@
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob); link.download = "vysledky.csv"; link.click();
         }
+        
         function calculateTechResults() {
             results = [];
             students.forEach((name, i) => {
